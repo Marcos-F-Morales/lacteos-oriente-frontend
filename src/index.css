@@ -71,3 +71,156 @@ body { font-family:'Inter',sans-serif; background:var(--navy-950); color:#fff; -
 @keyframes spin { to{transform:rotate(360deg)} }
 .fade-up { animation:fadeInUp 0.4s ease both; }
 .spinner { border-radius:50%; border:2px solid rgba(255,255,255,0.2); border-top-color:#fff; animation:spin 0.9s linear infinite; }
+
+/* ============================================================
+   RESPONSIVE MÓVIL — 768px y menos
+   ============================================================ */
+
+/* ── Layout principal ─────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Oculta el sidebar en móvil */
+  aside {
+    display: none !important;
+  }
+
+  /* El contenido ocupa todo el ancho */
+  div[style*="display:\"flex\""][style*="height:\"100vh\""],
+  div[style*="display: flex"][style*="height: 100vh"] {
+    flex-direction: column;
+  }
+
+  /* ── TopBar móvil ───────────────────────────────────────── */
+  header {
+    padding: 10px 16px !important;
+  }
+
+  /* ── Login móvil ────────────────────────────────────────── */
+  .login-container {
+    flex-direction: column !important;
+  }
+
+  /* ── Padding general de vistas ──────────────────────────── */
+  .fade-up {
+    padding: 16px !important;
+  }
+
+  /* ── Grids de 3 columnas → 1 columna ───────────────────── */
+  div[style*="grid-template-columns: 1fr 1fr 1fr"],
+  div[style*="gridTemplateColumns:\"1fr 1fr 1fr\""],
+  div[style*="gridTemplateColumns: \"1fr 1fr 1fr\""] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Grids de 4 columnas → 2 columnas ──────────────────── */
+  div[style*="repeat(4,1fr)"],
+  div[style*="repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Grids de 2 columnas → 1 columna ───────────────────── */
+  div[style*="grid-template-columns: 1fr 1fr"],
+  div[style*="gridTemplateColumns:\"1fr 1fr\""] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Títulos grandes ────────────────────────────────────── */
+  h1[style*="font-size: 38px"],
+  h1[style*="fontSize: 38"],
+  h1[style*="fontSize:38"] {
+    font-size: 28px !important;
+  }
+
+  h1[style*="font-size: 36px"],
+  h1[style*="fontSize: 36"],
+  h1[style*="fontSize:36"] {
+    font-size: 26px !important;
+  }
+
+  /* ── Oculta la columna derecha (foto) en móvil ──────────── */
+  div[style*="width: 38%"],
+  div[style*="width:\"38%\""],
+  div[style*="width: 50%"][style*="position: relative"] {
+    display: none !important;
+  }
+
+  /* ── El panel izquierdo ocupa todo en móvil ─────────────── */
+  div[style*="width: 50%"]:first-child {
+    width: 100% !important;
+    padding: 32px 24px !important;
+  }
+
+  /* ── Tablas horizontales → scroll ───────────────────────── */
+  .navy-card {
+    overflow-x: auto !important;
+  }
+
+  /* ── Botón iniciar análisis ─────────────────────────────── */
+  .btn-iniciar {
+    font-size: 14px !important;
+    padding: 14px 32px !important;
+  }
+
+  /* ── Pills de sensor ────────────────────────────────────── */
+  .pill-sensor {
+    font-size: 16px !important;
+    padding: 8px 16px !important;
+  }
+
+  /* ── Resultado análisis en columna ──────────────────────── */
+  .result-apta,
+  .result-noapta {
+    font-size: 14px !important;
+    padding: 10px 20px !important;
+  }
+
+  /* ── Trow (filas de tabla) scroll horizontal ─────────────── */
+  .trow {
+    min-width: 600px;
+  }
+
+  /* ── Input full width en móvil ──────────────────────────── */
+  .input-navy {
+    font-size: 16px !important; /* Evita zoom automático en iOS */
+  }
+
+  /* ── Navbar móvil — barra inferior ──────────────────────── */
+  .mobile-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 22, 40, 0.97);
+    border-top: 1px solid rgba(255,255,255,0.09);
+    padding: 8px 0;
+    z-index: 100;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* Agrega padding inferior para no tapar contenido con la nav */
+  main {
+    padding-bottom: 70px !important;
+  }
+}
+
+/* ── Navbar móvil oculta en desktop ──────────────────────── */
+.mobile-nav {
+  display: none;
+}
+
+/* ── Pantallas muy pequeñas (< 400px) ────────────────────── */
+@media (max-width: 400px) {
+  div[style*="repeat(2, 1fr)"],
+  div[style*="repeat(2,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .btn-iniciar {
+    font-size: 13px !important;
+    padding: 12px 24px !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
