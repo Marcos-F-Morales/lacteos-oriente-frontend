@@ -5,7 +5,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine
 } from "recharts";
-import { getHistorialIoT, getUltimaMedicion, getInventario, getAlertas, getLotes } from "../utils/api";
+import { getHistorialIoT, getUltimaMedicion, getInventario, getAlertas, getLotes, getUmbrales } from "../utils/api";
 
 const isMobile = () => window.innerWidth <= 768;
 
@@ -54,6 +54,7 @@ export default function Dashboard() {
   const [modoDemo,       setModoDemo]       = useState(false);
   const [ultimaActu,     setUltimaActu]     = useState(null);
   const [mobile,         setMobile]         = useState(isMobile());
+  const [umbrales,       setUmbrales]       = useState(null);
 
   useEffect(() => {
     const handler = () => setMobile(isMobile());
@@ -91,6 +92,10 @@ export default function Dashboard() {
       const { data } = await getLotes({ limit:5 });
       if (data.lotes?.length > 0) { setLotesRecientes(data.lotes); ok = true; }
     } catch {}
+    try {
+      const { data } = await getUmbrales();
+      if (data) setUmbrales(data);
+    } catch {}
     setModoDemo(!ok);
     setUltimaActu(new Date().toLocaleTimeString("es-GT"));
     setCargando(false);
@@ -100,9 +105,15 @@ export default function Dashboard() {
 
   const temp = ultimaMed?.temperatura ?? null;
   const ph   = ultimaMed?.ph ?? null;
+
+  const limTemp    = umbrales?.temp_max  ?? 8;
+  const limPhMin   = umbrales?.ph_min   ?? 6.5;
+  const limPhMax   = umbrales?.ph_max   ?? 6.8;
+  const tempSubMsg = temp !== null ? (temp > limTemp ? "⚠ Sobre límite" : "En rango") : "Sin sensor";
+  const phSubMsg   = ph   !== null ? ((ph < limPhMin || ph > limPhMax) ? "⚠ Fuera rango" : "En rango") : "Sin sensor";
+
   const fmtFecha = str => str ? new Date(str).toLocaleDateString("es-GT") : "—";
   const fmtHora  = str => str ? new Date(str).toLocaleTimeString("es-GT",{hour:"2-digit",minute:"2-digit"}) : "—";
-
   const pad = mobile ? "16px" : "28px 32px";
 
   return (
@@ -123,23 +134,29 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* Métricas — 2 columnas en móvil, 4 en desktop */}
+      {/* Métricas */}
       <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr 1fr" : "repeat(4,1fr)", gap:10 }}>
         <MetricCard label="Temperatura" icon={Thermometer} color="#6a9fd8"
-          value={temp !== null ? `${temp}°C` : "—"}
-          sub={temp !== null ? (temp > 8 ? "⚠ Sobre límite" : "En rango") : "Sin sensor"}/>
+          value={temp !== null ? `${temp}°C` : "—"} sub={tempSubMsg}/>
         <MetricCard label="pH" icon={FlaskConical} color="#a8c8ec"
-          value={ph !== null ? ph : "—"}
-          sub={ph !== null ? ((ph<6.5||ph>6.8)?"⚠ Fuera rango":"En rango") : "Sin sensor"}/>
+          value={ph !== null ? ph : "—"} sub={phSubMsg}/>
         <MetricCard label="Inventario" icon={Milk} color="#6a9fd8" value={litros ?? "— L"}/>
         <MetricCard label="Alertas" icon={AlertTriangle} color={numAlertas>0?"#e74c3c":"#2ecc71"}
           value={numAlertas} sub={numAlertas>0?"últimas 24h":"Todo en orden"}/>
       </div>
 
-      {/* Gráficas — 1 columna en móvil, 2 en desktop */}
+      {/* Gráficas */}
       <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap:12 }}>
+        {/* Temperatura */}
         <div className="navy-card" style={{ padding:"16px" }}>
-          <p style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:15, marginBottom:12 }}>Temperatura</p>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+            <p style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:15 }}>Temperatura</p>
+            {umbrales && (
+              <span style={{ fontSize:10, color:"rgba(255,255,255,0.38)" }}>
+                Umbral: {umbrales.temp_min}–{umbrales.temp_max}°C
+              </span>
+            )}
+          </div>
           {tempData.length === 0 ? <GraficaVacia mensaje="Sin historial de temperatura"/> : (
             <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={tempData} margin={{ top:5, right:5, left:-24, bottom:0 }}>
@@ -148,24 +165,47 @@ export default function Dashboard() {
                 <XAxis dataKey="h" tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }} interval="preserveStartEnd"/>
                 <YAxis tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }}/>
                 <Tooltip content={<ChartTip unit="°C"/>}/>
-                <ReferenceLine y={8} stroke="#e74c3c" strokeDasharray="4 4" label={{ value:"Lím 8°C", fill:"#e74c3c", fontSize:9 }}/>
+                {umbrales?.temp_max && (
+                  <ReferenceLine y={umbrales.temp_max} stroke="#e74c3c" strokeDasharray="4 4"
+                    label={{ value:`Máx ${umbrales.temp_max}°C`, fill:"#e74c3c", fontSize:9 }}/>
+                )}
+                {umbrales?.temp_min && (
+                  <ReferenceLine y={umbrales.temp_min} stroke="#f59e0b" strokeDasharray="4 4"
+                    label={{ value:`Mín ${umbrales.temp_min}°C`, fill:"#f59e0b", fontSize:9 }}/>
+                )}
                 <Area type="monotone" dataKey="temp" stroke="#6a9fd8" strokeWidth={2} fill="url(#gt)" dot={false}/>
               </AreaChart>
             </ResponsiveContainer>
           )}
         </div>
+
+        {/* pH */}
         <div className="navy-card" style={{ padding:"16px" }}>
-          <p style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:15, marginBottom:12 }}>Nivel de pH</p>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+            <p style={{ fontFamily:"'Playfair Display',serif", fontWeight:700, fontSize:15 }}>Nivel de pH</p>
+            {umbrales && (
+              <span style={{ fontSize:10, color:"rgba(255,255,255,0.38)" }}>
+                Umbral: {umbrales.ph_min}–{umbrales.ph_max}
+              </span>
+            )}
+          </div>
           {phData.length === 0 ? <GraficaVacia mensaje="Sin historial de pH"/> : (
             <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={phData} margin={{ top:5, right:5, left:-24, bottom:0 }}>
                 <defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="15%" stopColor="#a8c8ec" stopOpacity={0.45}/><stop offset="95%" stopColor="#a8c8ec" stopOpacity={0}/></linearGradient></defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)"/>
                 <XAxis dataKey="h" tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }} interval="preserveStartEnd"/>
-                <YAxis tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }} domain={[6.0,7.5]}/>
+                <YAxis tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }}
+                  domain={umbrales ? [Math.max(0, umbrales.ph_min - 0.5), umbrales.ph_max + 0.5] : [6.0, 7.5]}/>
                 <Tooltip content={<ChartTip unit=""/>}/>
-                <ReferenceLine y={6.8} stroke="#f59e0b" strokeDasharray="4 4"/>
-                <ReferenceLine y={6.5} stroke="#f59e0b" strokeDasharray="4 4"/>
+                {umbrales?.ph_max && (
+                  <ReferenceLine y={umbrales.ph_max} stroke="#f59e0b" strokeDasharray="4 4"
+                    label={{ value:`Máx ${umbrales.ph_max}`, fill:"#f59e0b", fontSize:9 }}/>
+                )}
+                {umbrales?.ph_min && (
+                  <ReferenceLine y={umbrales.ph_min} stroke="#f59e0b" strokeDasharray="4 4"
+                    label={{ value:`Mín ${umbrales.ph_min}`, fill:"#f59e0b", fontSize:9 }}/>
+                )}
                 <Area type="monotone" dataKey="ph" stroke="#a8c8ec" strokeWidth={2} fill="url(#gp)" dot={false}/>
               </AreaChart>
             </ResponsiveContainer>
@@ -184,7 +224,6 @@ export default function Dashboard() {
             Sin registros. Crea el primer análisis.
           </div>
         ) : mobile ? (
-          // Vista de tarjetas en móvil
           <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             {lotesRecientes.map((l, i) => {
               const phVal = l.ph_manual ?? l.ph_sensor ?? l.ph ?? "—";
