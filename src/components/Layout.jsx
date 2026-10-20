@@ -1,24 +1,23 @@
 // src/components/Layout.jsx
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Activity, Package, GitBranch,
-  Bell, Settings, LogOut, User, ShieldCheck, Menu, X
+  Bell, Settings, LogOut, User, ShieldCheck
 } from "lucide-react";
 import logoImg from "../assets/logo.png";
+import { getAlertas } from "../utils/api";
 
-// ── Detectar móvil ────────────────────────────────────────────
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  useState(() => {
+  useEffect(() => {
     const handler = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
-  });
+  }, []);
   return isMobile;
 }
 
-// ── Logo ──────────────────────────────────────────────────────
 export function LogoImg({ size = "md" }) {
   const d = size === "sm" ? 48 : size === "lg" ? 100 : 68;
   return (
@@ -47,31 +46,26 @@ export function LogoSeal({ size = "md" }) {
   return <LogoImg size={size}/>;
 }
 
-// ── Navegación ────────────────────────────────────────────────
 const NAV_BASE = [
-  { path:"/dashboard",     label:"Dashboard",     icon:LayoutDashboard },
-  { path:"/analisis",      label:"Análisis",      icon:Activity        },
-  { path:"/inventario",    label:"Inventario",    icon:Package         },
-  { path:"/trazabilidad",  label:"Trazabilidad",  icon:GitBranch       },
-  { path:"/alertas",       label:"Alertas",       icon:Bell            },
-  { path:"/configuracion", label:"Config",        icon:Settings        },
+  { path:"/dashboard",     label:"Dashboard",    icon:LayoutDashboard },
+  { path:"/analisis",      label:"Análisis",     icon:Activity        },
+  { path:"/inventario",    label:"Inventario",   icon:Package         },
+  { path:"/trazabilidad",  label:"Trazabilidad", icon:GitBranch       },
+  { path:"/alertas",       label:"Alertas",      icon:Bell            },
+  { path:"/configuracion", label:"Config",       icon:Settings        },
 ];
 
-// ── Sidebar (solo desktop) ───────────────────────────────────
 export function Sidebar({ usuario, onLogout }) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const isMobile  = useIsMobile();
-
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isMobile = useIsMobile();
   if (isMobile) return null;
-
   const NAV = [
     ...NAV_BASE,
     ...(usuario?.rol === "administrador"
       ? [{ path:"/administracion", label:"Administración", icon:ShieldCheck }]
       : [])
   ];
-
   return (
     <aside style={{ width:228, background:"rgba(10,22,40,0.97)", borderRight:"1px solid rgba(255,255,255,0.09)", display:"flex", flexDirection:"column", height:"100vh", flexShrink:0, position:"sticky", top:0 }}>
       <div style={{ padding:"18px 16px", borderBottom:"1px solid rgba(255,255,255,0.08)" }}>
@@ -107,45 +101,27 @@ export function Sidebar({ usuario, onLogout }) {
   );
 }
 
-// ── Barra de navegación inferior (solo móvil) ─────────────────
-export function MobileNav({ usuario, onLogout }) {
+export function MobileNav({ usuario }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
-
   if (!isMobile) return null;
-
   const NAV_MOBILE = [
-    { path:"/dashboard",    label:"Inicio",   icon:LayoutDashboard },
-    { path:"/analisis",     label:"Análisis", icon:Activity        },
-    { path:"/inventario",   label:"Inventario",icon:Package        },
-    { path:"/alertas",      label:"Alertas",  icon:Bell            },
-    { path:"/perfil",       label:"Perfil",   icon:User            },
+    { path:"/dashboard",  label:"Inicio",    icon:LayoutDashboard },
+    { path:"/analisis",   label:"Análisis",  icon:Activity        },
+    { path:"/inventario", label:"Inventario",icon:Package         },
+    { path:"/alertas",    label:"Alertas",   icon:Bell            },
+    { path:"/perfil",     label:"Perfil",    icon:User            },
   ];
-
   return (
-    <nav style={{
-      position:       "fixed",
-      bottom:         0,
-      left:           0,
-      right:          0,
-      background:     "rgba(10,22,40,0.97)",
-      borderTop:      "1px solid rgba(255,255,255,0.10)",
-      display:        "flex",
-      justifyContent: "space-around",
-      alignItems:     "center",
-      padding:        "8px 0 12px 0",
-      zIndex:         200,
-    }}>
+    <nav style={{ position:"fixed", bottom:0, left:0, right:0, background:"rgba(10,22,40,0.97)", borderTop:"1px solid rgba(255,255,255,0.10)", display:"flex", justifyContent:"space-around", alignItems:"center", padding:"8px 0 12px 0", zIndex:200 }}>
       {NAV_MOBILE.map(({ path, label, icon:Icon }) => {
         const active = location.pathname === path;
         return (
           <button key={path} onClick={() => navigate(path)}
             style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4, background:"none", border:"none", cursor:"pointer", padding:"4px 8px", color: active ? "#6a9fd8" : "rgba(255,255,255,0.45)", minWidth:50 }}>
             <Icon size={20} color={active ? "#6a9fd8" : "rgba(255,255,255,0.45)"}/>
-            <span style={{ fontSize:10, fontWeight: active ? 700 : 400, fontFamily:"Inter,sans-serif" }}>
-              {label}
-            </span>
+            <span style={{ fontSize:10, fontWeight: active ? 700 : 400, fontFamily:"Inter,sans-serif" }}>{label}</span>
           </button>
         );
       })}
@@ -153,11 +129,39 @@ export function MobileNav({ usuario, onLogout }) {
   );
 }
 
-// ── TopBar ────────────────────────────────────────────────────
-export function TopBar({ sensorOk = true, numAlertas = 2, usuario, onLogout }) {
-  const navigate       = useNavigate();
+// ── TopBar con alertas reales y menú que se cierra al hacer clic afuera ──
+export function TopBar({ sensorOk = true, usuario, onLogout }) {
+  const navigate        = useNavigate();
   const [menu, setMenu] = useState(false);
-  const isMobile       = useIsMobile();
+  const [numAlertas, setNumAlertas] = useState(0);
+  const isMobile        = useIsMobile();
+  const menuRef         = useRef(null);
+
+  // Carga alertas reales cada 30 s
+  const cargarAlertas = useCallback(async () => {
+    try {
+      const { data } = await getAlertas(24);
+      setNumAlertas(data.total ?? data.alertas?.length ?? 0);
+    } catch { /* silencioso */ }
+  }, []);
+
+  useEffect(() => {
+    cargarAlertas();
+    const id = setInterval(cargarAlertas, 30000);
+    return () => clearInterval(id);
+  }, [cargarAlertas]);
+
+  // Cierra el menú al hacer clic fuera
+  useEffect(() => {
+    if (!menu) return;
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menu]);
 
   const cerrarSesion = () => {
     setMenu(false);
@@ -166,61 +170,39 @@ export function TopBar({ sensorOk = true, numAlertas = 2, usuario, onLogout }) {
   };
 
   return (
-    <header style={{
-      display:        "flex",
-      alignItems:     "center",
-      justifyContent: "space-between",
-      gap:            20,
-      padding:        isMobile ? "10px 16px" : "13px 28px",
-      background:     "rgba(10,22,40,0.95)",
-      backdropFilter: "blur(14px)",
-      borderBottom:   "1px solid rgba(255,255,255,0.08)",
-      position:       "sticky",
-      top:            0,
-      zIndex:         100,
-    }}>
+    <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:20, padding: isMobile ? "10px 16px" : "13px 28px", background:"rgba(10,22,40,0.95)", backdropFilter:"blur(14px)", borderBottom:"1px solid rgba(255,255,255,0.08)", position:"sticky", top:0, zIndex:100 }}>
 
       {/* Logo */}
       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-        <img src={logoImg} alt="Logo"
-          style={{ width: isMobile ? 28 : 32, height: isMobile ? 28 : 32, objectFit:"contain", borderRadius:"50%", opacity:0.9 }}/>
-        {!isMobile && (
-          <span style={{ fontFamily:"'Playfair Display',serif", fontSize:14, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>
-            Lácteos de Oriente
-          </span>
-        )}
-        {isMobile && (
-          <span style={{ fontFamily:"'Playfair Display',serif", fontSize:13, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>
-            Lácteos de Oriente
-          </span>
-        )}
+        <img src={logoImg} alt="Logo" style={{ width: isMobile?28:32, height: isMobile?28:32, objectFit:"contain", borderRadius:"50%", opacity:0.9 }}/>
+        <span style={{ fontFamily:"'Playfair Display',serif", fontSize: isMobile?13:14, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>
+          Lácteos de Oriente
+        </span>
       </div>
 
       {/* Derecha */}
-      <div style={{ display:"flex", alignItems:"center", gap: isMobile ? 12 : 20 }}>
+      <div style={{ display:"flex", alignItems:"center", gap: isMobile?12:20 }}>
 
         {/* Estado sensor */}
-        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize: isMobile ? 11 : 12, fontWeight:600, color: sensorOk ? "#6a9fd8" : "#e74c3c" }}>
-          <span style={{ width:7, height:7, borderRadius:"50%", display:"inline-block",
-            background: sensorOk ? "#6a9fd8" : "#e74c3c",
-            boxShadow: sensorOk ? "0 0 6px #6a9fd8" : "none" }}/>
+        <div style={{ display:"flex", alignItems:"center", gap:6, fontSize: isMobile?11:12, fontWeight:600, color: sensorOk?"#6a9fd8":"#e74c3c" }}>
+          <span style={{ width:7, height:7, borderRadius:"50%", display:"inline-block", background: sensorOk?"#6a9fd8":"#e74c3c", boxShadow: sensorOk?"0 0 6px #6a9fd8":"none" }}/>
           {!isMobile && (sensorOk ? "Sensor conectado" : "Sensor desconectado")}
         </div>
 
-        {/* Campana */}
+        {/* Campana con contador real */}
         <button onClick={() => navigate("/alertas")}
           style={{ background:"none", border:"none", cursor:"pointer", position:"relative", color:"rgba(255,255,255,0.55)", padding:0 }}>
-          <Bell size={isMobile ? 20 : 19}/>
+          <Bell size={isMobile?20:19}/>
           {numAlertas > 0 && (
             <span style={{ position:"absolute", top:-6, right:-6, background:"#e74c3c", borderRadius:"50%", width:16, height:16, fontSize:10, fontWeight:700, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              {numAlertas}
+              {numAlertas > 99 ? "99+" : numAlertas}
             </span>
           )}
         </button>
 
         {/* Avatar + dropdown */}
-        <div style={{ position:"relative" }}>
-          <button onClick={() => setMenu(!menu)}
+        <div style={{ position:"relative" }} ref={menuRef}>
+          <button onClick={() => setMenu(m => !m)}
             style={{ width:32, height:32, borderRadius:"50%",
               background: usuario?.rol==="administrador" ? "linear-gradient(135deg,#1d4080,#2456a4)" : "linear-gradient(135deg,#1a5c36,#2ecc71)",
               border:"1.5px solid rgba(255,255,255,0.35)", cursor:"pointer", fontWeight:800, fontSize:12, color:"#fff",
@@ -236,10 +218,9 @@ export function TopBar({ sensorOk = true, numAlertas = 2, usuario, onLogout }) {
                   {usuario?.rol || "operador"}
                 </div>
               </div>
-
               {[
-                { label:"Ver Perfil",    icon:User,    go:"/perfil"        },
-                { label:"Configuración", icon:Settings,go:"/configuracion" },
+                { label:"Ver Perfil",    icon:User,        go:"/perfil"         },
+                { label:"Configuración", icon:Settings,    go:"/configuracion"  },
                 ...(usuario?.rol==="administrador"
                   ? [{ label:"Administración", icon:ShieldCheck, go:"/administracion" }]
                   : [])
@@ -251,7 +232,6 @@ export function TopBar({ sensorOk = true, numAlertas = 2, usuario, onLogout }) {
                   <Icon size={14}/> {label}
                 </button>
               ))}
-
               <div style={{ borderTop:"1px solid rgba(255,255,255,0.08)", marginTop:4, paddingTop:4 }}>
                 <button onClick={cerrarSesion}
                   style={{ display:"flex", alignItems:"center", gap:10, width:"100%", padding:"10px 12px", borderRadius:8, fontSize:13, color:"#e74c3c", background:"none", border:"none", cursor:"pointer", fontFamily:"Inter,sans-serif", textAlign:"left" }}
