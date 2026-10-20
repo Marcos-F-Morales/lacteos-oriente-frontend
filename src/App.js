@@ -18,11 +18,10 @@ function AppLayout({ usuario, handleLogout }) {
     <div style={{ display:"flex", height:"100vh", overflow:"hidden" }}>
       <Sidebar usuario={usuario} onLogout={handleLogout}/>
       <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-        <TopBar sensorOk={true} numAlertas={2} usuario={usuario} onLogout={handleLogout}/>
+        <TopBar sensorOk={true} usuario={usuario} onLogout={handleLogout}/>
         <main style={{ flex:1, overflowY:"auto" }}>
           <Outlet/>
         </main>
-        {/* Barra inferior para móvil */}
         <MobileNav usuario={usuario} onLogout={handleLogout}/>
       </div>
     </div>
@@ -98,12 +97,23 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Toaster position="top-right"
+      <Toaster
+        position="top-right"
+        visibleToasts={3}
+        gutter={8}
         toastOptions={{
-          style: { background:"#0d1e36", color:"#fff", border:"1px solid rgba(255,255,255,0.12)", borderRadius:10, fontSize:13 },
+          duration: 2500,
+          style: {
+            background:"#0d1e36",
+            color:"#fff",
+            border:"1px solid rgba(255,255,255,0.12)",
+            borderRadius:10,
+            fontSize:13,
+          },
           success: { iconTheme: { primary:"#2ecc71", secondary:"#fff" } },
           error:   { iconTheme: { primary:"#e74c3c", secondary:"#fff" } },
-        }}/>
+        }}
+      />
 
       <Routes>
         <Route path="/"
