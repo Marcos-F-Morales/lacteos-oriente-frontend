@@ -24,7 +24,6 @@ function useIsMobile() {
   return isMobile;
 }
 
-// ── Dropdown personalizado de finca ──────────────────────────────────────────
 function FincaDropdown({ proveedores, value, onChange, onNueva, isMobile }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -41,157 +40,75 @@ function FincaDropdown({ proveedores, value, onChange, onNueva, isMobile }) {
 
   return (
     <div ref={ref} style={{ position:"relative", width:"100%" }}>
-
-      {/* Botón trigger */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
         style={{
-          width:           "100%",
-          background:      seleccionada ? "rgba(36,86,164,0.18)" : "rgba(255,255,255,0.06)",
-          border:          seleccionada
-                             ? "1px solid rgba(106,159,216,0.55)"
-                             : "1px solid rgba(255,255,255,0.14)",
-          borderRadius:    10,
-          padding:         isMobile ? "13px 40px 13px 14px" : "11px 40px 11px 14px",
-          fontSize:        isMobile ? 16 : 14,
-          color:           seleccionada ? "#fff" : "rgba(255,255,255,0.35)",
-          fontFamily:      "Inter, sans-serif",
-          cursor:          "pointer",
-          textAlign:       "left",
-          display:         "flex",
-          alignItems:      "center",
-          gap:             10,
-          transition:      "border-color 0.2s, background 0.2s",
-          position:        "relative",
+          width:"100%", background: seleccionada?"rgba(36,86,164,0.18)":"rgba(255,255,255,0.06)",
+          border: seleccionada?"1px solid rgba(106,159,216,0.55)":"1px solid rgba(255,255,255,0.14)",
+          borderRadius:10, padding: isMobile?"13px 40px 13px 14px":"11px 40px 11px 14px",
+          fontSize: isMobile?16:14, color: seleccionada?"#fff":"rgba(255,255,255,0.35)",
+          fontFamily:"Inter, sans-serif", cursor:"pointer", textAlign:"left",
+          display:"flex", alignItems:"center", gap:10, transition:"border-color 0.2s, background 0.2s", position:"relative",
         }}
       >
-        <MapPin
-          size={14}
-          color={seleccionada ? "#6a9fd8" : "rgba(255,255,255,0.25)"}
-          style={{ flexShrink:0 }}
-        />
-        <span style={{
-          flex:          1,
-          overflow:      "hidden",
-          textOverflow:  "ellipsis",
-          whiteSpace:    "nowrap",
-          fontWeight:    seleccionada ? 600 : 400,
-        }}>
+        <MapPin size={14} color={seleccionada?"#6a9fd8":"rgba(255,255,255,0.25)"} style={{ flexShrink:0 }}/>
+        <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontWeight: seleccionada?600:400 }}>
           {value || "— Seleccionar finca —"}
         </span>
-        <ChevronDown
-          size={14}
-          color="rgba(255,255,255,0.40)"
-          style={{
-            position:   "absolute",
-            right:      12,
-            top:        "50%",
-            transform:  `translateY(-50%) rotate(${open ? "180deg" : "0deg"})`,
-            transition: "transform 0.22s ease",
-            flexShrink: 0,
-          }}
-        />
+        <ChevronDown size={14} color="rgba(255,255,255,0.40)"
+          style={{ position:"absolute", right:12, top:"50%", transform:`translateY(-50%) rotate(${open?"180deg":"0deg"})`, transition:"transform 0.22s ease", flexShrink:0 }}/>
       </button>
 
-      {/* Panel desplegable */}
       {open && (
         <div style={{
-          position:     "absolute",
-          top:          "calc(100% + 6px)",
-          left:         0,
-          right:        0,
-          background:   "#0b1929",
-          border:       "1px solid rgba(255,255,255,0.14)",
-          borderRadius: 12,
-          boxShadow:    "0 16px 48px rgba(0,0,0,0.65)",
-          zIndex:       600,
-          overflow:     "hidden",
-          maxHeight:    240,
-          overflowY:    "auto",
+          position:"absolute", top:"calc(100% + 6px)", left:0, right:0,
+          background:"#0b1929", border:"1px solid rgba(255,255,255,0.14)",
+          borderRadius:12, boxShadow:"0 16px 48px rgba(0,0,0,0.65)",
+          zIndex:600, overflow:"hidden", maxHeight:240, overflowY:"auto",
         }}>
-
-          {/* Header del panel */}
-          <div style={{
-            padding:       "9px 14px",
-            fontSize:      11,
-            color:         "rgba(255,255,255,0.30)",
-            fontStyle:     "italic",
-            letterSpacing: "0.03em",
-            borderBottom:  "1px solid rgba(255,255,255,0.07)",
-          }}>
+          <div style={{ padding:"9px 14px", fontSize:11, color:"rgba(255,255,255,0.30)", fontStyle:"italic", letterSpacing:"0.03em", borderBottom:"1px solid rgba(255,255,255,0.07)" }}>
             Fincas registradas
           </div>
-
           {proveedores.length === 0 && (
-            <div style={{ padding:"16px 14px", fontSize:13, color:"rgba(255,255,255,0.35)", textAlign:"center" }}>
-              Sin fincas disponibles
-            </div>
+            <div style={{ padding:"16px 14px", fontSize:13, color:"rgba(255,255,255,0.35)", textAlign:"center" }}>Sin fincas disponibles</div>
           )}
-
-          {/* Opciones de finca */}
           {proveedores.map(p => {
             const isSelected = value === p.nombre;
             return (
-              <button
-                key={p.id}
-                type="button"
+              <button key={p.id} type="button"
                 onClick={() => { onChange(p.nombre); setOpen(false); }}
                 style={{
-                  display:       "flex",
-                  alignItems:    "center",
-                  gap:           10,
-                  width:         "100%",
-                  padding:       "11px 14px",
-                  background:    isSelected ? "rgba(36,86,164,0.28)" : "transparent",
-                  border:        "none",
-                  borderBottom:  "1px solid rgba(255,255,255,0.05)",
-                  cursor:        "pointer",
-                  fontSize:      13,
-                  color:         isSelected ? "#6a9fd8" : "#e8edf3",
-                  fontFamily:    "Inter, sans-serif",
-                  textAlign:     "left",
-                  fontWeight:    isSelected ? 600 : 400,
-                  transition:    "background 0.12s",
+                  display:"flex", alignItems:"center", gap:10, width:"100%",
+                  padding:"11px 14px", background: isSelected?"rgba(36,86,164,0.28)":"transparent",
+                  border:"none", borderBottom:"1px solid rgba(255,255,255,0.05)",
+                  cursor:"pointer", fontSize:13, color: isSelected?"#6a9fd8":"#e8edf3",
+                  fontFamily:"Inter, sans-serif", textAlign:"left", fontWeight: isSelected?600:400, transition:"background 0.12s",
                 }}
-                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
-                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background="rgba(255,255,255,0.07)"; }}
+                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background="transparent"; }}
               >
-                <MapPin size={13} color={isSelected ? "#6a9fd8" : "rgba(255,255,255,0.28)"} style={{ flexShrink:0 }}/>
+                <MapPin size={13} color={isSelected?"#6a9fd8":"rgba(255,255,255,0.28)"} style={{ flexShrink:0 }}/>
                 <span style={{ flex:1 }}>{p.nombre}</span>
                 {isSelected && <Check size={13} color="#6a9fd8"/>}
               </button>
             );
           })}
-
-          {/* Opción: escribir nueva finca */}
-          <button
-            type="button"
+          <button type="button"
             onClick={() => { onNueva(); setOpen(false); }}
             style={{
-              display:      "flex",
-              alignItems:   "center",
-              gap:          10,
-              width:        "100%",
-              padding:      "11px 14px",
-              background:   "rgba(36,86,164,0.10)",
-              border:       "none",
-              borderTop:    "1px solid rgba(255,255,255,0.10)",
-              cursor:       "pointer",
-              fontSize:     13,
-              color:        "#6a9fd8",
-              fontFamily:   "Inter, sans-serif",
-              textAlign:    "left",
+              display:"flex", alignItems:"center", gap:10, width:"100%",
+              padding:"11px 14px", background:"rgba(36,86,164,0.10)", border:"none",
+              borderTop:"1px solid rgba(255,255,255,0.10)", cursor:"pointer",
+              fontSize:13, color:"#6a9fd8", fontFamily:"Inter, sans-serif", textAlign:"left",
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(36,86,164,0.22)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(36,86,164,0.10)"; }}
+            onMouseEnter={e => { e.currentTarget.style.background="rgba(36,86,164,0.22)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background="rgba(36,86,164,0.10)"; }}
           >
             ✏ Escribir otra finca...
           </button>
         </div>
       )}
-
-      {/* Confirmación verde */}
       {value && (
         <p style={{ fontSize:11, color:"#2ecc71", marginTop:5, display:"flex", alignItems:"center", gap:4 }}>
           <Check size={11}/> <strong>{value}</strong>
@@ -200,7 +117,6 @@ function FincaDropdown({ proveedores, value, onChange, onNueva, isMobile }) {
     </div>
   );
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default function Analisis({ usuario }) {
   const isMobile    = useIsMobile();
@@ -263,7 +179,15 @@ export default function Analisis({ usuario }) {
     setProgreso(100);
     setIot({ temp: tempSensor, ph: phSensor });
 
-    const { apta, errores } = clasificar(tempSensor, parseFloat(manual.ph), parseFloat(manual.densidad));
+    // ── Usar umbrales del backend si están disponibles ──────────── ← CAMBIO
+    const rangosActivos = umbrales ? {
+      temperatura: { min: umbrales.temp_min,     max: umbrales.temp_max     },
+      ph:          { min: umbrales.ph_min,       max: umbrales.ph_max       },
+      densidad:    { min: umbrales.densidad_min, max: umbrales.densidad_max },
+    } : null;
+    const { apta, errores } = clasificar(tempSensor, parseFloat(manual.ph), parseFloat(manual.densidad), rangosActivos);
+    // ────────────────────────────────────────────────────────────────
+
     setResultado({ apta, errores, temp:tempSensor, ph:parseFloat(manual.ph), densidad:parseFloat(manual.densidad) });
     setEstado("done");
 
@@ -328,93 +252,62 @@ export default function Analisis({ usuario }) {
         </div>
       )}
 
-      {/* Título */}
       <div style={{ textAlign:"center", position:"relative" }}>
         <h1 style={{ fontFamily:"'Playfair Display',serif", fontSize: isMobile?26:38, fontWeight:800, letterSpacing:"-0.02em", marginBottom:6 }}>
           Nuevo Análisis.
         </h1>
-        <p style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>
-          Complete los datos y presione INICIAR para evaluar la leche
-        </p>
+        <p style={{ fontSize:12, color:"rgba(255,255,255,0.45)" }}>Complete los datos y presione INICIAR para evaluar la leche</p>
         <p style={{ fontSize:11, color:"#e74c3c", marginTop:4 }}>* Campos obligatorios</p>
       </div>
 
-      {/* Botón INICIAR */}
       <div style={{ display:"flex", justifyContent:"center" }}>
         <button className={`btn-iniciar${estado==="analyzing"?" analizando":""}`}
           onClick={iniciar} disabled={estado==="analyzing"}
-          style={ isMobile ? { fontSize:14, padding:"13px 32px" } : {} }>
+          style={ isMobile?{ fontSize:14, padding:"13px 32px" }:{} }>
           {estado==="analyzing"
             ? <><span className="spinner" style={{ width:20, height:20 }}/> Analizando...</>
             : <><Play size={20} fill="#fff"/> INICIAR ANÁLISIS</>}
         </button>
       </div>
 
-      {/* Barra de progreso */}
       {estado==="analyzing" && (
         <div style={{ maxWidth:420, margin:"0 auto", width:"100%" }}>
           <div style={{ height:3, background:"rgba(255,255,255,0.08)", borderRadius:999, overflow:"hidden" }}>
             <div style={{ background:"linear-gradient(90deg,#2456a4,#6a9fd8)", height:"100%", width:`${progreso}%`, transition:"width 0.15s", borderRadius:999 }}/>
           </div>
-          <p style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.40)", marginTop:6 }}>
-            Leyendo sensores... {progreso}%
-          </p>
+          <p style={{ textAlign:"center", fontSize:11, color:"rgba(255,255,255,0.40)", marginTop:6 }}>Leyendo sensores... {progreso}%</p>
         </div>
       )}
 
-      {/* Formulario — 3 col desktop / 1 col móvil */}
       <div style={{ display:"grid", gridTemplateColumns: isMobile?"1fr":"1fr 1fr 1fr", gap: isMobile?14:20, position:"relative" }}>
 
-        {/* ── Columna 1 — Datos de recepción ── */}
         <div>
           <p className="section-label">Datos de Recepción</p>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-
-            {/* Finca — DROPDOWN PERSONALIZADO */}
             <div>
               <Label required>Nombre de la Finca</Label>
-
               {fincaMode === "lista" && (
-                <FincaDropdown
-                  proveedores={proveedores}
-                  value={recepcion.finca}
-                  isMobile={isMobile}
+                <FincaDropdown proveedores={proveedores} value={recepcion.finca} isMobile={isMobile}
                   onChange={(nombre) => setRecepcion(p => ({ ...p, finca: nombre }))}
-                  onNueva={() => {
-                    setFincaMode("nueva");
-                    setRecepcion(p => ({ ...p, finca: "" }));
-                  }}
-                />
+                  onNueva={() => { setFincaMode("nueva"); setRecepcion(p => ({ ...p, finca: "" })); }}/>
               )}
-
               {fincaMode === "nueva" && (
                 <div>
-                  <input
-                    className="input-navy"
-                    placeholder="Nombre de la nueva finca"
-                    value={recepcion.finca}
-                    onChange={e => setRecepcion(p => ({ ...p, finca: e.target.value }))}
-                    autoFocus
-                    style={{ fontSize: isMobile ? 16 : 14 }}
-                  />
-                  <button
-                    type="button"
+                  <input className="input-navy" placeholder="Nombre de la nueva finca"
+                    value={recepcion.finca} onChange={e => setRecepcion(p => ({ ...p, finca: e.target.value }))}
+                    autoFocus style={{ fontSize: isMobile?16:14 }}/>
+                  <button type="button"
                     onClick={() => { setFincaMode("lista"); setRecepcion(p => ({ ...p, finca: "" })); }}
-                    style={{ marginTop:6, fontSize:11, color:"#6a9fd8", background:"none", border:"none", cursor:"pointer", padding:0, textDecoration:"underline" }}
-                  >
+                    style={{ marginTop:6, fontSize:11, color:"#6a9fd8", background:"none", border:"none", cursor:"pointer", padding:0, textDecoration:"underline" }}>
                     ← Volver al listado
                   </button>
                 </div>
               )}
             </div>
-
-            {/* Fecha */}
             <div>
               <Label required>Fecha de Recepción</Label>
               <input className="input-navy" type="date" value={recepcion.fecha} onChange={setR("fecha")} style={{ fontSize: isMobile?16:14 }}/>
             </div>
-
-            {/* Litros */}
             <div>
               <Label required>Cantidad de Litros</Label>
               <div style={{ position:"relative" }}>
@@ -422,8 +315,6 @@ export default function Analisis({ usuario }) {
                 <Lock size={13} color="rgba(255,255,255,0.30)" style={{ position:"absolute", right:12, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}/>
               </div>
             </div>
-
-            {/* Operador */}
             <div>
               <Label required>Nombre del Operador</Label>
               <div style={{ position:"relative" }}>
@@ -436,7 +327,6 @@ export default function Analisis({ usuario }) {
           </div>
         </div>
 
-        {/* ── Columna 2 — IoT ── */}
         <div>
           <p className="section-label">Sistema IoT — ESP32</p>
           <div className="navy-card" style={{ padding:"18px", display:"flex", flexDirection:"column", gap:14, minHeight: isMobile?140:220, justifyContent:"center" }}>
@@ -456,7 +346,6 @@ export default function Analisis({ usuario }) {
           </div>
         </div>
 
-        {/* ── Columna 3 — Datos manuales ── */}
         <div>
           <p className="section-label">Datos Manuales del Operador</p>
           <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
@@ -479,18 +368,14 @@ export default function Analisis({ usuario }) {
         </div>
       </div>
 
-      {/* Panel de resultado */}
       {resultado && (
         <div className="navy-card" style={{ padding: isMobile?"16px":"20px 24px" }}>
           <p className="section-label">Resultado del Análisis</p>
           <div style={{ display:"flex", flexDirection: isMobile?"column":"row", alignItems: isMobile?"flex-start":"center", gap:16 }}>
-
-            <div className={resultado.apta?"result-apta":"result-noapta"}
-              style={ isMobile?{fontSize:14,padding:"10px 20px"}:{} }>
+            <div className={resultado.apta?"result-apta":"result-noapta"} style={ isMobile?{fontSize:14,padding:"10px 20px"}:{} }>
               {resultado.apta ? <CheckCircle size={isMobile?16:20}/> : <XCircle size={isMobile?16:20}/>}
               {resultado.apta ? "LECHE APTA ✓" : "LECHE NO APTA ✗"}
             </div>
-
             <div style={{ flex:1 }}>
               <p style={{ fontSize:13, color:"rgba(255,255,255,0.70)" }}>
                 <strong style={{ color:"#fff" }}>{recepcion.finca}</strong>
@@ -505,23 +390,14 @@ export default function Analisis({ usuario }) {
                 </p>
               )}
               <p style={{ fontSize:11, color:"rgba(255,255,255,0.35)", marginTop:4 }}>
-                {resultado.apta
-                  ? "✓ Señal al ESP32 — LED VERDE (APTA)"
-                  : "✗ Señal al ESP32 — LED ROJO (NO APTA)"}
+                {resultado.apta ? "✓ Señal al ESP32 — LED VERDE (APTA)" : "✗ Señal al ESP32 — LED ROJO (NO APTA)"}
               </p>
             </div>
-
             <div style={{ display:"flex", gap:10, flexWrap:"wrap", width: isMobile?"100%":"auto" }}>
-              <button className="btn-navy"
-                style={{ padding:"10px 20px", fontSize:13, borderRadius:9, flex: isMobile?1:"none" }}
-                onClick={guardar}>
+              <button className="btn-navy" style={{ padding:"10px 20px", fontSize:13, borderRadius:9, flex: isMobile?1:"none" }} onClick={guardar}>
                 <Save size={15}/> Guardar Registro
               </button>
-              <button className="btn-outline-white"
-                style={{ flex: isMobile?1:"none" }}
-                onClick={resetear}>
-                Cancelar
-              </button>
+              <button className="btn-outline-white" style={{ flex: isMobile?1:"none" }} onClick={resetear}>Cancelar</button>
             </div>
           </div>
         </div>
