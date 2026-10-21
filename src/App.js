@@ -12,6 +12,7 @@ import Alertas        from "./views/Alertas";
 import Perfil         from "./views/Perfil";
 import Configuracion  from "./views/Configuracion";
 import Administracion from "./views/Administracion";
+import Reportes from "./views/Reportes";
 
 function AppLayout({ usuario, handleLogout }) {
   return (
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="/configuracion" element={<Configuracion/>}/>
             <Route element={<AdminRoute usuario={usuario}/>}>
               <Route path="/administracion" element={<Administracion usuario={usuario}/>}/>
+            <Route path="/reportes" element={<Reportes />} />
             </Route>
           </Route>
         </Route>

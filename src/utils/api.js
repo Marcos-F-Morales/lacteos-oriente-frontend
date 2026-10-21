@@ -101,4 +101,17 @@ export const getRoles   = ()                      => api.get("/roles");
 export const postRol    = (nombre, descripcion)   => api.post(`/roles?nombre=${encodeURIComponent(nombre)}&descripcion=${encodeURIComponent(descripcion || "")}`);
 export const deleteRol  = (id)                    => api.delete(`/roles/${id}`);
 
+// ── Reportes ──────────────────────────────────────────────────────────
+export const getReporteLotes = (periodo = "mes", finca = null) => {
+  const params = new URLSearchParams({ periodo });
+  if (finca) params.append("finca", finca);
+  return api.get(`/reportes/lotes?${params}`);
+};
+
+export const getReporteInventario = (periodo = "mes") =>
+  api.get(`/reportes/inventario?periodo=${periodo}`);
+
+export const getReporteAlertas = (periodo = "mes") =>
+  api.get(`/reportes/alertas?periodo=${periodo}`);
+
 export default api;

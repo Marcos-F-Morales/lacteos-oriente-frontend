@@ -3,8 +3,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Activity, Package, GitBranch,
-  Bell, Settings, LogOut, User, ShieldCheck
-} from "lucide-react";
+  Bell, Settings, LogOut, User, ShieldCheck, FileText
+} from "lucide-react";                                      // ← FileText agregado
 import logoImg from "../assets/logo.png";
 import { getAlertas } from "../utils/api";
 
@@ -52,6 +52,7 @@ const NAV_BASE = [
   { path:"/inventario",    label:"Inventario",   icon:Package         },
   { path:"/trazabilidad",  label:"Trazabilidad", icon:GitBranch       },
   { path:"/alertas",       label:"Alertas",      icon:Bell            },
+  { path:"/reportes",      label:"Reportes",     icon:FileText        }, // ← NUEVO
   { path:"/configuracion", label:"Config",       icon:Settings        },
 ];
 
@@ -110,7 +111,7 @@ export function MobileNav({ usuario }) {
     { path:"/dashboard",  label:"Inicio",    icon:LayoutDashboard },
     { path:"/analisis",   label:"Análisis",  icon:Activity        },
     { path:"/inventario", label:"Inventario",icon:Package         },
-    { path:"/alertas",    label:"Alertas",   icon:Bell            },
+    { path:"/reportes",   label:"Reportes",  icon:FileText        }, // ← NUEVO (reemplaza Alertas)
     { path:"/perfil",     label:"Perfil",    icon:User            },
   ];
   return (
@@ -137,7 +138,6 @@ export function TopBar({ sensorOk = true, usuario, onLogout }) {
   const isMobile        = useIsMobile();
   const menuRef         = useRef(null);
 
-  // Carga alertas reales cada 30 s
   const cargarAlertas = useCallback(async () => {
     try {
       const { data } = await getAlertas(24);
@@ -151,7 +151,6 @@ export function TopBar({ sensorOk = true, usuario, onLogout }) {
     return () => clearInterval(id);
   }, [cargarAlertas]);
 
-  // Cierra el menú al hacer clic fuera
   useEffect(() => {
     if (!menu) return;
     const handler = (e) => {
@@ -172,7 +171,6 @@ export function TopBar({ sensorOk = true, usuario, onLogout }) {
   return (
     <header style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:20, padding: isMobile ? "10px 16px" : "13px 28px", background:"rgba(10,22,40,0.95)", backdropFilter:"blur(14px)", borderBottom:"1px solid rgba(255,255,255,0.08)", position:"sticky", top:0, zIndex:100 }}>
 
-      {/* Logo */}
       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
         <img src={logoImg} alt="Logo" style={{ width: isMobile?28:32, height: isMobile?28:32, objectFit:"contain", borderRadius:"50%", opacity:0.9 }}/>
         <span style={{ fontFamily:"'Playfair Display',serif", fontSize: isMobile?13:14, fontWeight:700, color:"rgba(255,255,255,0.85)" }}>
@@ -180,16 +178,13 @@ export function TopBar({ sensorOk = true, usuario, onLogout }) {
         </span>
       </div>
 
-      {/* Derecha */}
       <div style={{ display:"flex", alignItems:"center", gap: isMobile?12:20 }}>
 
-        {/* Estado sensor */}
         <div style={{ display:"flex", alignItems:"center", gap:6, fontSize: isMobile?11:12, fontWeight:600, color: sensorOk?"#6a9fd8":"#e74c3c" }}>
           <span style={{ width:7, height:7, borderRadius:"50%", display:"inline-block", background: sensorOk?"#6a9fd8":"#e74c3c", boxShadow: sensorOk?"0 0 6px #6a9fd8":"none" }}/>
           {!isMobile && (sensorOk ? "Sensor conectado" : "Sensor desconectado")}
         </div>
 
-        {/* Campana con contador real */}
         <button onClick={() => navigate("/alertas")}
           style={{ background:"none", border:"none", cursor:"pointer", position:"relative", color:"rgba(255,255,255,0.55)", padding:0 }}>
           <Bell size={isMobile?20:19}/>
@@ -200,7 +195,6 @@ export function TopBar({ sensorOk = true, usuario, onLogout }) {
           )}
         </button>
 
-        {/* Avatar + dropdown */}
         <div style={{ position:"relative" }} ref={menuRef}>
           <button onClick={() => setMenu(m => !m)}
             style={{ width:32, height:32, borderRadius:"50%",
@@ -220,6 +214,7 @@ export function TopBar({ sensorOk = true, usuario, onLogout }) {
               </div>
               {[
                 { label:"Ver Perfil",    icon:User,        go:"/perfil"         },
+                { label:"Reportes",      icon:FileText,    go:"/reportes"       }, // ← NUEVO en dropdown
                 { label:"Configuración", icon:Settings,    go:"/configuracion"  },
                 ...(usuario?.rol==="administrador"
                   ? [{ label:"Administración", icon:ShieldCheck, go:"/administracion" }]
