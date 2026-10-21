@@ -38,8 +38,12 @@ export default function Alertas() {
     try {
       await resolverAlerta(id);
       setAlertas(a => a.filter(al => al.id !== id));
-      toast.success("Alerta resuelta");
-    } catch { toast.error("No se pudo resolver"); }
+      toast.dismiss();
+      toast.success("Alerta resuelta", { id: "resolver" });
+    } catch {
+      toast.dismiss();
+      toast.error("No se pudo resolver", { id: "resolver" });
+    }
   };
 
   const colorTipo = { TEMP_ALTA:"#e74c3c", PH_BAJO:"#f59e0b", PH_ALTO:"#f59e0b", DENSIDAD:"#a855f7" };
@@ -47,8 +51,8 @@ export default function Alertas() {
   const labelTipo = { TEMP_ALTA:"Temperatura Alta", PH_BAJO:"pH Bajo", PH_ALTO:"pH Alto", DENSIDAD:"Densidad Fuera Rango" };
   const pad = mobile ? "16px" : "28px 32px";
 
-  const totalPags  = Math.ceil(alertas.length / POR_PAGINA);
-  const paginadas  = alertas.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
+  const totalPags = Math.ceil(alertas.length / POR_PAGINA);
+  const paginadas = alertas.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
 
   return (
     <div style={{ padding:pad, display:"flex", flexDirection:"column", gap:20, paddingBottom: mobile?80:pad }} className="fade-up">
@@ -69,7 +73,6 @@ export default function Alertas() {
         </div>
 
         <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
-          {/* Selector período */}
           <div style={{ position:"relative", display:"inline-flex", alignItems:"center" }}>
             <Clock size={12} color="rgba(255,255,255,0.38)" style={{ position:"absolute", left:10, pointerEvents:"none", zIndex:1 }}/>
             <select value={horas} onChange={e => setHoras(Number(e.target.value))}
@@ -84,14 +87,12 @@ export default function Alertas() {
             </svg>
           </div>
 
-          {/* Botón actualizar */}
           <button onClick={() => cargar(horas)} disabled={cargando}
             style={{ display:"flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:8, padding:"7px 13px", fontSize:12, color:"rgba(255,255,255,0.65)", cursor:"pointer" }}>
             <RefreshCw size={12} style={{ animation: cargando ? "spin 1s linear infinite" : "none" }}/>
             {!mobile && "Actualizar"}
           </button>
 
-          {/* Badge contador */}
           {alertas.length > 0 && (
             <span style={{ background:"rgba(231,76,60,0.15)", border:"1px solid rgba(231,76,60,0.35)", borderRadius:999, padding:"5px 12px", fontSize:12, fontWeight:700, color:"#e74c3c", display:"flex", alignItems:"center", gap:5 }}>
               <AlertTriangle size={12}/> {alertas.length}
@@ -119,7 +120,6 @@ export default function Alertas() {
 
       ) : (
         <div className="navy-card" style={{ overflow:"hidden" }}>
-          {/* Lista paginada */}
           <div style={{ display:"flex", flexDirection:"column" }}>
             {paginadas.map((a) => {
               const color = colorTipo[a.tipo] || "#e74c3c";
@@ -130,7 +130,6 @@ export default function Alertas() {
                   onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.03)"}
                   onMouseLeave={e => e.currentTarget.style.background="transparent"}>
 
-                  {/* Ícono + datos */}
                   <div style={{ display:"flex", alignItems:"center", gap:14, flex:1, overflow:"hidden" }}>
                     <div style={{ width:40, height:40, borderRadius:10, flexShrink:0, background:`${color}18`, border:`1px solid ${color}28`, display:"flex", alignItems:"center", justifyContent:"center" }}>
                       <Icon size={17} color={color}/>
@@ -155,7 +154,6 @@ export default function Alertas() {
                     </div>
                   </div>
 
-                  {/* Botón resolver */}
                   <button onClick={() => resolver(a.id)}
                     style={{ flexShrink:0, fontSize:11, fontWeight:600, background:"rgba(46,204,113,0.08)", border:"1px solid rgba(46,204,113,0.28)", borderRadius:7, padding:"6px 13px", color:"#2ecc71", cursor:"pointer", display:"flex", alignItems:"center", gap:5, whiteSpace:"nowrap", transition:"background 0.18s" }}
                     onMouseEnter={e => e.currentTarget.style.background="rgba(46,204,113,0.18)"}
@@ -167,7 +165,6 @@ export default function Alertas() {
             })}
           </div>
 
-          {/* Paginación */}
           {totalPags > 1 && (
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 20px", borderTop:"1px solid rgba(255,255,255,0.07)" }}>
               <button onClick={() => setPagina(p => Math.max(0, p-1))} disabled={pagina===0}
