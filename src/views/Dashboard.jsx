@@ -106,9 +106,9 @@ export default function Dashboard() {
   const temp = ultimaMed?.temperatura ?? null;
   const ph   = ultimaMed?.ph ?? null;
 
-  const limTemp    = umbrales?.temp_max  ?? 8;
-  const limPhMin   = umbrales?.ph_min   ?? 6.5;
-  const limPhMax   = umbrales?.ph_max   ?? 6.8;
+  const limTemp  = umbrales?.temp_max ?? 8;
+  const limPhMin = umbrales?.ph_min   ?? 6.5;
+  const limPhMax = umbrales?.ph_max   ?? 6.8;
   const tempSubMsg = temp !== null ? (temp > limTemp ? "⚠ Sobre límite" : "En rango") : "Sin sensor";
   const phSubMsg   = ph   !== null ? ((ph < limPhMin || ph > limPhMax) ? "⚠ Fuera rango" : "En rango") : "Sin sensor";
 
@@ -147,6 +147,7 @@ export default function Dashboard() {
 
       {/* Gráficas */}
       <div style={{ display:"grid", gridTemplateColumns: mobile ? "1fr" : "1fr 1fr", gap:12 }}>
+
         {/* Temperatura */}
         <div className="navy-card" style={{ padding:"16px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
@@ -160,18 +161,23 @@ export default function Dashboard() {
           {tempData.length === 0 ? <GraficaVacia mensaje="Sin historial de temperatura"/> : (
             <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={tempData} margin={{ top:5, right:5, left:-24, bottom:0 }}>
-                <defs><linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="15%" stopColor="#6a9fd8" stopOpacity={0.45}/><stop offset="95%" stopColor="#6a9fd8" stopOpacity={0}/></linearGradient></defs>
+                <defs>
+                  <linearGradient id="gt" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="15%" stopColor="#6a9fd8" stopOpacity={0.45}/>
+                    <stop offset="95%" stopColor="#6a9fd8" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)"/>
                 <XAxis dataKey="h" tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }} interval="preserveStartEnd"/>
                 <YAxis tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }}/>
                 <Tooltip content={<ChartTip unit="°C"/>}/>
                 {umbrales?.temp_max && (
                   <ReferenceLine y={umbrales.temp_max} stroke="#e74c3c" strokeDasharray="4 4"
-                    label={{ value:`Máx ${umbrales.temp_max}°C`, fill:"#e74c3c", fontSize:9 }}/>
+                    label={{ value:`Máx ${umbrales.temp_max}°C`, fill:"#e74c3c", fontSize:9, position:"insideTopRight", offset:4 }}/>
                 )}
                 {umbrales?.temp_min && (
                   <ReferenceLine y={umbrales.temp_min} stroke="#f59e0b" strokeDasharray="4 4"
-                    label={{ value:`Mín ${umbrales.temp_min}°C`, fill:"#f59e0b", fontSize:9 }}/>
+                    label={{ value:`Mín ${umbrales.temp_min}°C`, fill:"#f59e0b", fontSize:9, position:"insideBottomRight", offset:4 }}/>
                 )}
                 <Area type="monotone" dataKey="temp" stroke="#6a9fd8" strokeWidth={2} fill="url(#gt)" dot={false}/>
               </AreaChart>
@@ -192,7 +198,12 @@ export default function Dashboard() {
           {phData.length === 0 ? <GraficaVacia mensaje="Sin historial de pH"/> : (
             <ResponsiveContainer width="100%" height={140}>
               <AreaChart data={phData} margin={{ top:5, right:5, left:-24, bottom:0 }}>
-                <defs><linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="15%" stopColor="#a8c8ec" stopOpacity={0.45}/><stop offset="95%" stopColor="#a8c8ec" stopOpacity={0}/></linearGradient></defs>
+                <defs>
+                  <linearGradient id="gp" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="15%" stopColor="#a8c8ec" stopOpacity={0.45}/>
+                    <stop offset="95%" stopColor="#a8c8ec" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)"/>
                 <XAxis dataKey="h" tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }} interval="preserveStartEnd"/>
                 <YAxis tick={{ fontSize:9, fill:"rgba(255,255,255,0.35)" }}
@@ -200,11 +211,11 @@ export default function Dashboard() {
                 <Tooltip content={<ChartTip unit=""/>}/>
                 {umbrales?.ph_max && (
                   <ReferenceLine y={umbrales.ph_max} stroke="#f59e0b" strokeDasharray="4 4"
-                    label={{ value:`Máx ${umbrales.ph_max}`, fill:"#f59e0b", fontSize:9 }}/>
+                    label={{ value:`Máx ${umbrales.ph_max}`, fill:"#f59e0b", fontSize:9, position:"insideTopRight", offset:4 }}/>
                 )}
                 {umbrales?.ph_min && (
                   <ReferenceLine y={umbrales.ph_min} stroke="#f59e0b" strokeDasharray="4 4"
-                    label={{ value:`Mín ${umbrales.ph_min}`, fill:"#f59e0b", fontSize:9 }}/>
+                    label={{ value:`Mín ${umbrales.ph_min}`, fill:"#f59e0b", fontSize:9, position:"insideBottomRight", offset:4 }}/>
                 )}
                 <Area type="monotone" dataKey="ph" stroke="#a8c8ec" strokeWidth={2} fill="url(#gp)" dot={false}/>
               </AreaChart>
@@ -265,6 +276,8 @@ export default function Dashboard() {
           </>
         )}
       </div>
+
+      <style>{`@keyframes spin { to { transform:rotate(360deg); } }`}</style>
     </div>
   );
 }
